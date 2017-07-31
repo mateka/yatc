@@ -1,6 +1,5 @@
 
-set(TARGET yatc-executable)
+set(TARGET yatc)
 
 add_executable(${TARGET} main.cpp)
-set_target_properties(${TARGET} PROPERTIES OUTPUT_NAME yatc)
-
+target_link_libraries(${TARGET} libyatc)
