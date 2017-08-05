@@ -2,6 +2,7 @@
 set(TARGET libyatc)
 set(SRCS
     src/coordinate.cpp
+	src/tetrimino.cpp
 )
 
 add_library(${TARGET} STATIC ${SRCS})

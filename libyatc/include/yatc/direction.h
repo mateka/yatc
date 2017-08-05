@@ -2,11 +2,11 @@
 
 
 namespace yatc {
-    /*! \brief Represents possible directions.
-     *
-     */
-    enum class direction {
-        left,   //!< left
-        right   //!< right
-    };
+/*! \brief Represents possible directions.
+ *
+ */
+enum class direction {
+	left,   //!< left
+	right   //!< right
+};
 }
