@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE coordinate
+#define BOOST_TEST_MODULE tetrimino
 #include <boost/test/unit_test.hpp>
 
 #include <yatc/coordinate.h>
@@ -141,4 +141,81 @@ BOOST_AUTO_TEST_CASE(standalone_rotate_tetrimino)
 		coordinate{ 1, 0 }, coordinate{ 1, -1 }
 	);
 	BOOST_TEST(rotate(l_before, rotation::cw) == l_after);
+}
+
+BOOST_AUTO_TEST_CASE(from_shape_i)
+{
+	const auto s = shape::I;
+	const tetrimino t(
+		coordinate{ 0, -1 }, coordinate{ 0, 0 },
+		coordinate{ 0, 1 }, coordinate{ 0, 2 },
+		s
+	);
+	BOOST_TEST(t == tetrimino::from(s));
+}
+
+BOOST_AUTO_TEST_CASE(from_shape_j)
+{
+	const auto s = shape::J;
+	const tetrimino t(
+		coordinate{ 0, -1 }, coordinate{ 0, 0 },
+		coordinate{ 0, 1 }, coordinate{ -1, 1 },
+		s
+	);
+	BOOST_TEST(t == tetrimino::from(s));
+}
+
+BOOST_AUTO_TEST_CASE(from_shape_l)
+{
+	const auto s = shape::L;
+	const tetrimino t(
+		coordinate{ 0, -1 }, coordinate{ 0, 0 },
+		coordinate{ 0, 1 }, coordinate{ 1, 1 },
+		s
+	);
+	BOOST_TEST(t == tetrimino::from(s));
+}
+
+BOOST_AUTO_TEST_CASE(from_shape_o)
+{
+	const auto s = shape::O;
+	const tetrimino t(
+		coordinate{ 0, 0 }, coordinate{ 1, 0 },
+		coordinate{ 0, 1 }, coordinate{ 1, 1 },
+		s
+	);
+	BOOST_TEST(t == tetrimino::from(s));
+}
+
+BOOST_AUTO_TEST_CASE(from_shape_s)
+{
+	const auto s = shape::S;
+	const tetrimino t(
+		coordinate{ 1, 0 }, coordinate{ 2, 0 },
+		coordinate{ 0, 1 }, coordinate{ 1, 1 },
+		s
+	);
+	BOOST_TEST(t == tetrimino::from(s));
+}
+
+BOOST_AUTO_TEST_CASE(from_shape_Z)
+{
+	const auto s = shape::Z;
+	const tetrimino t(
+		coordinate{ -1, 0 }, coordinate{ 0, 0 },
+		coordinate{ 0, 1 }, coordinate{ 1, 1 },
+		s
+	);
+	BOOST_TEST(t == tetrimino::from(s));
+}
+
+BOOST_AUTO_TEST_CASE(from_shape_t)
+{
+	const auto s = shape::T;
+	const tetrimino t(
+		coordinate{ -1, 0 }, coordinate{ 0, 0 },
+		coordinate{ 1, 0 }, coordinate{ 0, 1 },
+		s
+	);
+	BOOST_TEST(t == tetrimino::from(s));
 }

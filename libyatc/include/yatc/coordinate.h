@@ -15,7 +15,7 @@ public:
 	using type = std::int8_t;
 
 	/*! \brief Creates 2d point */
-	explicit coordinate(const type x = 0, const type y = 0);
+	coordinate(const type x = 0, const type y = 0);
 
 	coordinate(coordinate&&) = default;
 	coordinate(const coordinate&) = default;

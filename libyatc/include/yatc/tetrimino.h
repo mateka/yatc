@@ -3,16 +3,32 @@
 #include <yatc/coordinate.h>
 #include <yatc/rotation.h>
 #include <yatc/shape.h>
+#include <yatc/yatc_error.h>
+
 #include <array>
+#include <stdexcept>
 
 
 namespace yatc {
+/*! \brief Class for error of creating tetrimino from wrong shape. */
+class unknown_shape_error final : public yatc_error, public std::logic_error {
+public:
+	using logic_error::logic_error;
+};
+
+
 /*! \brief Represents one tetrimino.
 */
 class tetrimino final {
 	using container = std::array<coordinate, 4>;
 public:
 	using const_iterator = container::const_iterator;	//!< const iterator to piece
+
+	/*! \brief Creates tetrimino of given shape
+	*	\param s new tetrimino shape
+	*	\return New tetrimino of shape s.
+	*/
+	static tetrimino from(const shape s);
 
 	/*! \brief Creates tetrimino from four coordinates
 	*	\param a first piece

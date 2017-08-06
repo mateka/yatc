@@ -1,8 +1,34 @@
 #include <yatc/tetrimino.h>
 #include <algorithm>
+#include <sstream>
 
 
 namespace yatc {
+
+tetrimino tetrimino::from(const shape s) {
+	switch (s)
+	{
+	case shape::I:
+		return { coordinate{ 0, -1 }, coordinate{ 0, 0 }, coordinate{ 0, 1 }, coordinate{ 0, 2 }, s };
+	case shape::J:
+		return { coordinate{ 0, -1 }, coordinate{ 0, 0 }, coordinate{ 0, 1 }, coordinate{ -1, 1 }, s };
+	case shape::L:
+		return { coordinate{ 0, -1 }, coordinate{ 0, 0 }, coordinate{ 0, 1 }, coordinate{ 1, 1 }, s };
+	case shape::O:
+		return { coordinate{ 0, 0 }, coordinate{ 1, 0 }, coordinate{ 0, 1 }, coordinate{ 1, 1 }, s };
+	case shape::S:
+		return { coordinate{ 1, 0 }, coordinate{ 2, 0 }, coordinate{ 0, 1 }, coordinate{ 1, 1 }, s };
+	case shape::Z:
+		return { coordinate{ -1, 0 }, coordinate{ 0, 0 }, coordinate{ 0, 1 }, coordinate{ 1, 1 }, s };
+	case shape::T:
+		return { coordinate{ -1, 0 }, coordinate{ 0, 0 }, coordinate{ 1, 0 }, coordinate{ 0, 1 }, s };
+	default:
+		std::ostringstream msg;
+		msg << "Unknown shape '" << s << "'!";
+		throw unknown_shape_error(msg.str());
+	}
+}
+
 
 tetrimino::tetrimino(
 	const coordinate a,
@@ -70,7 +96,7 @@ std::ostream& operator<<(std::ostream& os, const tetrimino& t) {
 	os << t.tag() << " [";
 	std::for_each(
 		std::cbegin(t), std::cend(t),
-		[&os](const coordinate c) { os << c << ', '; }
+		[&os](const coordinate c) { os << c << ", "; }
 	);
 	return os << "]";
 }
