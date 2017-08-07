@@ -2,8 +2,15 @@
 set(TARGET libyatc)
 set(SRCS
     src/coordinate.cpp
-	src/tetrimino.cpp
-	src/board.cpp
+    src/board.cpp
+    src/tetriminos/tetrimino_base.cpp
+    src/tetriminos/tetrimino_i.cpp
+    src/tetriminos/tetrimino_j.cpp
+    src/tetriminos/tetrimino_l.cpp
+    src/tetriminos/tetrimino_o.cpp
+    src/tetriminos/tetrimino_s.cpp
+    src/tetriminos/tetrimino_t.cpp
+    src/tetriminos/tetrimino_z.cpp
 )
 
 add_library(${TARGET} STATIC ${SRCS})

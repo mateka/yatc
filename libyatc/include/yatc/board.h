@@ -3,6 +3,7 @@
 #include <yatc/shape.h>
 #include <yatc/tetrimino.h>
 #include <yatc/yatc_error.h>
+#include <yatc/coordinate.h>
 
 #include <array>
 #include <vector>
@@ -17,15 +18,22 @@ public:
 	using logic_error::logic_error;
 };
 
+/*! \brief Class for error of removing not full row. */
+class remove_not_full_row_error final : public yatc_error, public std::logic_error {
+public:
+	using logic_error::logic_error;
+};
+
 
 /*! \brief Class for tetris board.
 */
-class board final {
+class board {
 public:
 	using type = shape;	//!< Type of single cell
+	using axis_type = coordinate::type;	//!< Type of single axis coordinate
 private:
-	static constexpr std::size_t m_rows_count = 20;	//!< how many rows is in board
-	static constexpr std::size_t m_columns_count = 10;	//!< how many columns is in board
+	static constexpr axis_type m_rows_count = 20;	//!< how many rows is in board
+	static constexpr axis_type m_columns_count = 10;	//!< how many columns is in board
 
 	using row_type = std::array<shape, m_columns_count>;	//!< row contains 10 columns
 	using tetrion_type = std::vector<row_type>;	//!< board consists of rows
@@ -34,46 +42,58 @@ public:
 	*/
 	board();
 
+	virtual ~board() {}
+
 	/*!	\brief Rows count
 	*	\return Count of rows in board
 	*/
-	std::size_t rows_count() const;
+	axis_type rows_count() const;
 
 	/*!	\brief Columns count
 	*	\return Count of columns in board
 	*/
-	std::size_t columns_count() const;
+	axis_type columns_count() const;
 
-	/*! \brief Single cell indexer.
-	*	\param column column index.
-	*	\param row row index.
-	*	\return reference to cell from row row and column column.
+	/*! \brief Indexing board by coordinates
+	*   \param c cell's coordinates
+	*   \return reference to cell from c.y() row and c.x() column.
 	*/
-	type& operator()(const std::size_t column, const std::size_t row);
+	type& operator[](const coordinate c);
 
-	/*! \brief Single cell indexer.
-	*	\param column column index.
-	*	\param row row index.
-	*	\return vaule of cell from row row and column column.
+	/*! \brief Indexing board by coordinates
+	*   \param c cell's coordinates
+	*   \return Value of cell from c.y() row and c.x() column.
 	*/
-	type operator()(const std::size_t column, const std::size_t row) const;
+	type operator[](const coordinate c) const;
+
+	/*! \brief Check if coordinates are valid
+	*   \param c coordinates to check
+	*   \return true if point c is withing board's bounds.
+	*/
+	bool valid(const coordinate c) const;
 
 	/*! \brief Tests whether given position is empty.
-	*	\param column column index.
-	*	\param row row index.
-	*	\return true if cells(column, row) is free.
+	*   \param c coordinates to check
+	*	\return true if cell(c.x(), c.y()) is free.
 	*/
-	bool free(const std::size_t column, const std::size_t row) const;
+	bool free(const coordinate c) const;
+
+	/*! \brief Tests whether tetrimino's coordinates are empty.
+	*   \param t tetrimino, which coordinates should be checked
+	*	\return true if all tetrimino's coordinates are  free.
+	*/
+	bool free(const tetrimino& t) const;
 
 	/*! \brief Tests whether given row has all columns occupied.
 	*	\param row row index.
 	*	\return true if all columns in row row are not free.
 	*/
-	bool full(const std::size_t row) const;
+	bool full(const axis_type row) const;
 
 	/*! \brief Tests whether tetrimino can be placed.
 	*	\param t tetrimino to be placed.
-	*	\return true if all cells from tetrimino coordinates are free.
+	*	\return true if all cells from tetrimino coordinates are free
+	*   and there is one cell occupied below tetrimino.
 	*/
 	bool can_be_placed(const tetrimino& t) const;
 
@@ -81,6 +101,13 @@ public:
 	*	\param t tetrimino to be placed.
 	*/
 	void place(const tetrimino& t);
+
+	/*! \brief Removes full row from board.
+	*   \param row row index.
+	*/
+	virtual void remove_row(const axis_type row);
+protected:
+	row_type empty_row() const;	//!< Creates empty row
 private:
 	tetrion_type m_matrix;
 };

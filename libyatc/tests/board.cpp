@@ -3,7 +3,8 @@
 
 #include <yatc/board.h>
 #include <yatc/shape.h>
-#include <yatc/tetrimino.h>
+#include <yatc/coordinate.h>
+#include <yatc/tetriminos/tetriminos.h>
 using namespace yatc;
 
 
@@ -17,35 +18,74 @@ BOOST_AUTO_TEST_CASE(constructor)
 BOOST_AUTO_TEST_CASE(const_indexer)
 {
 	const board b;
-	BOOST_TEST(b(1, 9) == shape::unknown);
+	BOOST_TEST(b[coordinate(1, 9)] == shape::unknown);
 }
 
 BOOST_AUTO_TEST_CASE(indexer)
 {
 	board b;
-	BOOST_TEST(b(2, 0) == shape::unknown);
-	b(8, 11) = shape::J;
-	BOOST_TEST(b(8, 11) == shape::J);
+	BOOST_TEST(b[coordinate(2, 0)] == shape::unknown);
+	b[{8, 11}] = shape::J;
+	BOOST_TEST(b[coordinate(8, 11)] == shape::J);
+}
+
+BOOST_AUTO_TEST_CASE(valid)
+{
+	board b;
+	BOOST_TEST(!b.valid(coordinate(-1, 0)));
+	BOOST_TEST(!b.valid(coordinate(0, -1)));
+	BOOST_TEST(b.valid(coordinate(2, 0)));
+	BOOST_TEST(!b.valid(coordinate(b.columns_count(), 0)));
+	BOOST_TEST(!b.valid(coordinate(0, b.rows_count())));
 }
 
 BOOST_AUTO_TEST_CASE(free_cell)
 {
 	board b;
-	BOOST_TEST(b.free(8, 11));
-	b(8, 11) = shape::J;
-	BOOST_TEST(b.free(0, 0));
-	BOOST_TEST(!b.free(8, 11));
-	BOOST_TEST(b.free(8, 12));
-	BOOST_TEST(b.free(7, 11));
+	BOOST_TEST(b.free(coordinate(8, 11)));
+	b[{8, 11}]= shape::J;
+	BOOST_TEST(b.free(coordinate(0, 0)));
+	BOOST_TEST(!b.free(coordinate(8, 11)));
+	BOOST_TEST(b.free(coordinate(8, 12)));
+	BOOST_TEST(b.free(coordinate(7, 11)));
+}
+
+BOOST_AUTO_TEST_CASE(free_outside_board)
+{
+	board b;
+	b[{8, 11}] = shape::J;
+
+	tetrimino_i i;
+	BOOST_TEST(!b.free(i));
+}
+
+BOOST_AUTO_TEST_CASE(free_free_space)
+{
+	board b;
+	b[{8, 11}] = shape::J;
+
+	tetrimino_o o;
+	o.move({1, 1});
+	BOOST_TEST(b.free(o));
+}
+
+BOOST_AUTO_TEST_CASE(free_occupied_cell)
+{
+	board b;
+	b[{8, 11}] = shape::J;
+
+	tetrimino_t t;
+	t.move({ 8, 11 });
+	BOOST_TEST(!b.free(t));
 }
 
 BOOST_AUTO_TEST_CASE(full_row)
 {
 	board b;
-	const std::size_t row = 10;
-	for (std::size_t i = 0; i < b.columns_count(); ++i)
-		b(i, row) = shape::O;
-	b(8, 11) = shape::J;
+	const board::axis_type row = 10;
+	for (board::axis_type i = 0; i < b.columns_count(); ++i)
+		b[{i, row}] = shape::O;
+	b[{8, 11}] = shape::J;
 	BOOST_TEST(!b.full(11));
 	BOOST_TEST(b.full(row));
 	BOOST_TEST(!b.full(row - 1));
@@ -54,64 +94,103 @@ BOOST_AUTO_TEST_CASE(full_row)
 BOOST_AUTO_TEST_CASE(can_be_placed_outside_board)
 {
 	board b;
-	b(8, 11) = shape::J;
+	b[{8, 11}] = shape::J;
 
-	auto t = tetrimino::from(shape::I);
-	BOOST_TEST(!b.can_be_placed(t));
+	tetrimino_i i;
+	BOOST_TEST(!b.can_be_placed(i));
 }
 
-BOOST_AUTO_TEST_CASE(can_be_placed_on_free_space)
+BOOST_AUTO_TEST_CASE(can_be_placed_free_space_without_support)
 {
 	board b;
-	b(8, 11) = shape::J;
+	b[{8, 11}] = shape::J;
 
-	auto t = tetrimino::from(shape::O);
-	t.move({1, 1});
-	BOOST_TEST(b.can_be_placed(t));
+	tetrimino_o o;
+	o.move({1, 1});
+	BOOST_TEST(!b.can_be_placed(o));
 }
 
-BOOST_AUTO_TEST_CASE(can_be_placed_on_occupied_cell)
+BOOST_AUTO_TEST_CASE(can_be_placed_free_space_with_support)
 {
 	board b;
-	b(8, 11) = shape::J;
+	b[{8, 8}] = shape::J;
 
-	auto t = tetrimino::from(shape::T);
+	tetrimino_o o;
+	o.move({7, 9});
+	BOOST_TEST(b.can_be_placed(o));
+}
+
+BOOST_AUTO_TEST_CASE(can_be_placed_occupied_cell)
+{
+	board b;
+	b[{8, 11}] = shape::J;
+
+	tetrimino_t t;
 	t.move({ 8, 11 });
 	BOOST_TEST(!b.can_be_placed(t));
 }
 
-
 BOOST_AUTO_TEST_CASE(place_outside_board)
 {
 	board b;
-	b(8, 11) = shape::J;
+	b[{8, 11}] = shape::J;
 
-	auto t = tetrimino::from(shape::I);
-	BOOST_CHECK_THROW(b.place(t), cannot_place_tetrimino_error);
+	tetrimino_i i;
+	BOOST_CHECK_THROW(b.place(i), cannot_place_tetrimino_error);
 }
 
-BOOST_AUTO_TEST_CASE(place_on_free_space)
+BOOST_AUTO_TEST_CASE(place_on_free_space_with_support)
 {
 	board b;
-	b(8, 11) = shape::J;
+	b[{8, 8}] = shape::J;
 
-	auto t = tetrimino::from(shape::O);
-	t.move({ 1, 1 });
-	b.place(t);
-	BOOST_TEST(b.free(1, 0));
-	BOOST_TEST(b(1, 1) == t.tag());
-	BOOST_TEST(b(1, 2) == t.tag());
-	BOOST_TEST(b(2, 1) == t.tag());
-	BOOST_TEST(b(2, 2) == t.tag());
-	BOOST_TEST(b(8, 11) == shape::J);
+	tetrimino_o o;
+	o.move({ 7, 9 });
+	b.place(o);
+	BOOST_TEST(b.free(coordinate(1, 0)));
+	BOOST_TEST(b[coordinate(7, 9)] == o.tag());
+	BOOST_TEST(b[coordinate(8, 9)] == o.tag());
+	BOOST_TEST(b[coordinate(7, 10)] == o.tag());
+	BOOST_TEST(b[coordinate(8, 10)] == o.tag());
+	BOOST_TEST(b[coordinate(8, 8)] == shape::J);
+}
+
+BOOST_AUTO_TEST_CASE(place_on_free_space_without_support)
+{
+	board b;
+	b[{8, 11}] = shape::J;
+
+	tetrimino_o o;
+	o.move({ 1, 1 });
+	BOOST_CHECK_THROW(b.place(o), cannot_place_tetrimino_error);
 }
 
 BOOST_AUTO_TEST_CASE(place_on_occupied_cell)
 {
 	board b;
-	b(8, 11) = shape::J;
+	b[{8, 11}] = shape::J;
 
-	auto t = tetrimino::from(shape::T);
+	tetrimino_t t;
 	t.move({ 8, 11 });
 	BOOST_CHECK_THROW(b.place(t), cannot_place_tetrimino_error);
+}
+
+BOOST_AUTO_TEST_CASE(remove_not_full_row)
+{
+	board b;
+	b[{8, 11}] = shape::J;
+	BOOST_CHECK_THROW(b.remove_row(11), remove_not_full_row_error);
+}
+
+BOOST_AUTO_TEST_CASE(remove_row)
+{
+	board b;
+	const board::axis_type row = 10;
+	for(board::axis_type i = 0; i < b.columns_count(); ++i)
+		b[{i, row}] = shape::O;
+	b[{8, row + 1}] = shape::J;
+	b[{3, row - 1}] = shape::L;
+	b.remove_row(row);
+	BOOST_TEST(b[coordinate(8, row)] == shape::J);
+	BOOST_TEST(b[coordinate(3, row - 1)] == shape::L);
 }

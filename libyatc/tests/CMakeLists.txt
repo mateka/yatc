@@ -11,3 +11,5 @@ add_test(NAME tetrimino COMMAND tetrimino)
 add_executable(board board.cpp)
 target_link_libraries(board libyatc ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 add_test(NAME board COMMAND board)
+
+add_subdirectory(tetriminos)

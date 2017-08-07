@@ -3,45 +3,59 @@
 
 #include <yatc/coordinate.h>
 #include <yatc/tetrimino.h>
-#include <yatc/rotation.h>
 #include <yatc/shape.h>
-#include <algorithm>
+
+#include <memory>
+
 using namespace yatc;
 
-BOOST_AUTO_TEST_CASE(constructor)
-{
-	const tetrimino t(
-		coordinate{ -1, 0 }, coordinate{ 0, 0 },
-		coordinate{ 1, 0 }, coordinate{ 0, 1 }
-	);
-	const std::array<coordinate, 4> pieces{
-		coordinate{-1, 0}, coordinate{0, 0},
-		coordinate{ 1, 0}, coordinate{ 0, 1 }
-	};
-	BOOST_TEST(std::equal(std::cbegin(t), std::cend(t), std::cbegin(pieces)));
-}
 
-BOOST_AUTO_TEST_CASE(constructor_with_tag)
-{
-	const tetrimino l(
-		coordinate{ 0, -1 }, coordinate{ 0, 0 },
-		coordinate{ 0, 1 }, coordinate{ 1, 1 }, shape::L
-	);
-	const std::array<coordinate, 4> pieces {
-		coordinate{ 0, -1 }, coordinate{ 0, 0 },
-		coordinate{ 0, 1 }, coordinate{ 1, 1 }
-	};
-	BOOST_TEST(std::equal(std::cbegin(l), std::cend(l), std::cbegin(pieces)));
-	BOOST_TEST(l.tag() == shape::L);
-}
+class impl : public tetrimino {
+public:
+	impl(
+		const coordinate a,
+		const coordinate b,
+		const coordinate c,
+		const coordinate d,
+		const shape s = shape::unknown
+	) : m_data{ a, b, c, d }, m_tag{ s }
+	{}
+
+	const_iterator begin() const override {
+		return std::begin(m_data);
+	}
+
+	const_iterator cbegin() const override {
+		return std::cbegin(m_data);
+	}
+
+	const_iterator end() const override {
+		return std::end(m_data);
+	}
+
+	const_iterator cend() const override {
+		return std::cend(m_data);
+	}
+
+	shape tag() const override {
+		return m_tag;
+	}
+
+	void move(const coordinate c) override {}
+
+	void rotate(const rotation d) override {}
+private:
+	container m_data;
+	shape m_tag;
+};
 
 BOOST_AUTO_TEST_CASE(equality)
 {
-	const tetrimino l(
+	const impl l(
 		coordinate{ 0, -1 }, coordinate{ 0, 0 },
 		coordinate{ 0, 1 }, coordinate{ 1, 1 }
 	);
-	const tetrimino other_l(
+	const impl other_l(
 		coordinate{ 0, -1 }, coordinate{ 0, 0 },
 		coordinate{ 0, 1 }, coordinate{ 1, 1 }
 	);
@@ -50,11 +64,11 @@ BOOST_AUTO_TEST_CASE(equality)
 
 BOOST_AUTO_TEST_CASE(equality_with_tag)
 {
-	const tetrimino l(
+	impl l(
 		coordinate{ 0, -1 }, coordinate{ 0, 0 },
 		coordinate{ 0, 1 }, coordinate{ 1, 1 }, shape::L
 	);
-	const tetrimino other_l(
+	impl other_l(
 		coordinate{ 0, -1 }, coordinate{ 0, 0 },
 		coordinate{ 0, 1 }, coordinate{ 1, 1 }, shape::L
 	);
@@ -63,11 +77,11 @@ BOOST_AUTO_TEST_CASE(equality_with_tag)
 
 BOOST_AUTO_TEST_CASE(inequality)
 {
-	const tetrimino l(
+	const impl l(
 		coordinate{ 0, -1 }, coordinate{ 0, 0 },
 		coordinate{ 0, 1 }, coordinate{ 1, 1 }
 	);
-	const tetrimino t(
+	impl t(
 		coordinate{ -1, 0 }, coordinate{ 0, 0 },
 		coordinate{ 1, 0 }, coordinate{ 0, 1 }
 	);
@@ -76,146 +90,13 @@ BOOST_AUTO_TEST_CASE(inequality)
 
 BOOST_AUTO_TEST_CASE(inequality_with_tag)
 {
-	const tetrimino l(
+	impl l(
 		coordinate{ 0, -1 }, coordinate{ 0, 0 },
 		coordinate{ 0, 1 }, coordinate{ 1, 1 }, shape::L
 	);
-	const tetrimino other(
+	const impl other(
 		coordinate{ 0, -1 }, coordinate{ 0, 0 },
 		coordinate{ 0, 1 }, coordinate{ 1, 1 }, shape::T
 	);
 	BOOST_TEST(l != other);
-}
-
-BOOST_AUTO_TEST_CASE(move_tetrimino)
-{
-	tetrimino l_before(
-		coordinate{ 0, -1 }, coordinate{ 0, 0 },
-		coordinate{ 0, 1 }, coordinate{ 1, 1 }
-	);
-	const coordinate v{ 5, 6 };
-	const tetrimino l_after(
-		coordinate{ 0, -1 } + v, coordinate{ 0, 0 } + v,
-		coordinate{ 0, 1 } + v, coordinate{ 1, 1 } + v
-	);
-	l_before.move(v);
-	BOOST_TEST(l_before == l_after);
-}
-
-BOOST_AUTO_TEST_CASE(rotate_tetrimino)
-{
-	tetrimino l_before(
-		coordinate{ 0, -1 }, coordinate{ 0, 0 },
-		coordinate{ 0, 1 }, coordinate{ 1, 1 }
-	);
-	const tetrimino l_after(
-		coordinate{ -1, 0 }, coordinate{ 0, 0 },
-		coordinate{ 1, 0 }, coordinate{ 1, -1 }
-	);
-	l_before.rotate(rotation::cw);
-	BOOST_TEST(l_before == l_after);
-}
-
-BOOST_AUTO_TEST_CASE(standalone_move_tetrimino)
-{
-	const tetrimino l_before(
-		coordinate{ 0, -1 }, coordinate{ 0, 0 },
-		coordinate{ 0, 1 }, coordinate{ 1, 1 }
-	);
-	const coordinate v{ 5, 6 };
-	const tetrimino l_after(
-		coordinate{ 0, -1 } +v, coordinate{ 0, 0 } +v,
-		coordinate{ 0, 1 } +v, coordinate{ 1, 1 } +v
-	);
-	BOOST_TEST(move(l_before, v) == l_after);
-}
-
-BOOST_AUTO_TEST_CASE(standalone_rotate_tetrimino)
-{
-	const tetrimino l_before(
-		coordinate{ 0, -1 }, coordinate{ 0, 0 },
-		coordinate{ 0, 1 }, coordinate{ 1, 1 }
-	);
-	const tetrimino l_after(
-		coordinate{ -1, 0 }, coordinate{ 0, 0 },
-		coordinate{ 1, 0 }, coordinate{ 1, -1 }
-	);
-	BOOST_TEST(rotate(l_before, rotation::cw) == l_after);
-}
-
-BOOST_AUTO_TEST_CASE(from_shape_i)
-{
-	const auto s = shape::I;
-	const tetrimino t(
-		coordinate{ 0, -1 }, coordinate{ 0, 0 },
-		coordinate{ 0, 1 }, coordinate{ 0, 2 },
-		s
-	);
-	BOOST_TEST(t == tetrimino::from(s));
-}
-
-BOOST_AUTO_TEST_CASE(from_shape_j)
-{
-	const auto s = shape::J;
-	const tetrimino t(
-		coordinate{ 0, -1 }, coordinate{ 0, 0 },
-		coordinate{ 0, 1 }, coordinate{ -1, 1 },
-		s
-	);
-	BOOST_TEST(t == tetrimino::from(s));
-}
-
-BOOST_AUTO_TEST_CASE(from_shape_l)
-{
-	const auto s = shape::L;
-	const tetrimino t(
-		coordinate{ 0, -1 }, coordinate{ 0, 0 },
-		coordinate{ 0, 1 }, coordinate{ 1, 1 },
-		s
-	);
-	BOOST_TEST(t == tetrimino::from(s));
-}
-
-BOOST_AUTO_TEST_CASE(from_shape_o)
-{
-	const auto s = shape::O;
-	const tetrimino t(
-		coordinate{ 0, 0 }, coordinate{ 1, 0 },
-		coordinate{ 0, 1 }, coordinate{ 1, 1 },
-		s
-	);
-	BOOST_TEST(t == tetrimino::from(s));
-}
-
-BOOST_AUTO_TEST_CASE(from_shape_s)
-{
-	const auto s = shape::S;
-	const tetrimino t(
-		coordinate{ 1, 0 }, coordinate{ 2, 0 },
-		coordinate{ 0, 1 }, coordinate{ 1, 1 },
-		s
-	);
-	BOOST_TEST(t == tetrimino::from(s));
-}
-
-BOOST_AUTO_TEST_CASE(from_shape_Z)
-{
-	const auto s = shape::Z;
-	const tetrimino t(
-		coordinate{ -1, 0 }, coordinate{ 0, 0 },
-		coordinate{ 0, 1 }, coordinate{ 1, 1 },
-		s
-	);
-	BOOST_TEST(t == tetrimino::from(s));
-}
-
-BOOST_AUTO_TEST_CASE(from_shape_t)
-{
-	const auto s = shape::T;
-	const tetrimino t(
-		coordinate{ -1, 0 }, coordinate{ 0, 0 },
-		coordinate{ 1, 0 }, coordinate{ 0, 1 },
-		s
-	);
-	BOOST_TEST(t == tetrimino::from(s));
 }

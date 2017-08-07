@@ -3,80 +3,76 @@
 #include <yatc/coordinate.h>
 #include <yatc/rotation.h>
 #include <yatc/shape.h>
-#include <yatc/yatc_error.h>
+//#include <yatc/yatc_error.h>
 
 #include <array>
-#include <stdexcept>
+#include <algorithm>
+//#include <stdexcept>
 
 
 namespace yatc {
-/*! \brief Class for error of creating tetrimino from wrong shape. */
-class unknown_shape_error final : public yatc_error, public std::logic_error {
-public:
-	using logic_error::logic_error;
-};
+// /*! \brief Class for error of creating tetrimino from wrong shape. */
+// class unknown_shape_error final : public yatc_error, public std::logic_error {
+// public:
+// 	using logic_error::logic_error;
+// };
 
 
-/*! \brief Represents one tetrimino.
+/*! \brief Interface for one tetrimino.
 */
-class tetrimino final {
-	using container = std::array<coordinate, 4>;
+class tetrimino {
 public:
-	using const_iterator = container::const_iterator;	//!< const iterator to piece
+	using container = std::array<coordinate, 4>;
+	using const_iterator = container::const_iterator;	//!< iterator to const piece
 
 	/*! \brief Creates tetrimino of given shape
 	*	\param s new tetrimino shape
 	*	\return New tetrimino of shape s.
 	*/
-	static tetrimino from(const shape s);
+	// static tetrimino from(const shape s);
 
-	/*! \brief Creates tetrimino from four coordinates
-	*	\param a first piece
-	*	\param b second piece
-	*	\param c third piece
-	*	\param d fourth piece
-	*	\param s shape tag (default: unknown)
-	*/
-	tetrimino(
-		const coordinate a, const coordinate b,
-		const coordinate c, const coordinate d,
-		const shape s = shape::unknown
-	);
+	tetrimino() = default;
+	virtual ~tetrimino() {}
 
-	tetrimino(tetrimino&&) = default;
-	tetrimino(const tetrimino&) = default;
-	tetrimino& operator=(tetrimino&&) = default;
-	tetrimino& operator=(const tetrimino&) = default;
+	tetrimino(tetrimino&&) = delete;
+	tetrimino(const tetrimino&) = delete;
+	tetrimino& operator=(tetrimino&&) = delete;
+	tetrimino& operator=(const tetrimino&) = delete;
 
-	/*! \brief begin of shape
+	/*! \brief begin of tetrimino
 	*	\return iterator to first, const piece
 	*/
-	const_iterator begin() const;
-	const_iterator cbegin() const;
+	virtual const_iterator begin() const = 0;
 
-	/*! \brief end of shape
+	/*! \brief begin of tetrimino
+	*	\return iterator to first, const piece
+	*/
+	virtual const_iterator cbegin() const = 0;
+
+	/*! \brief end of tetrimino
 	*	\return iterator past last, const piece
 	*/
-	const_iterator end() const;
-	const_iterator cend() const;
+	virtual const_iterator end() const = 0;
+
+	/*! \brief end of tetrimino
+	*	\return iterator past last, const piece
+	*/
+	virtual const_iterator cend() const = 0;
 
 	/*! \brief shape tag accessor
 	*	\return shape tag for this tetrimino
 	*/
-	shape tag() const;
+	virtual shape tag() const = 0;
 
 	/*! \brief Moves tetrimino by vector.
 	*  \param c translation vector.
 	*/
-	void move(const coordinate c);
+	virtual void move(const coordinate c) = 0;
 
 	/*! \brief Rotates tetrimino for 90deg around {0, 0}.
 	*  \param d direction of rotation.
 	*/
-	void rotate(const rotation d);
-private:
-	container m_pieces;
-	shape m_tag;
+	virtual void rotate(const rotation d) = 0;
 };
 
 /*! \brief Comprison.
@@ -85,7 +81,14 @@ private:
 *  \return true if all a tetrimino's coordinates are equal
 *  to b tetrimino's coordinates.
 */
-bool operator==(const tetrimino& a, const tetrimino& b);
+inline bool operator==(const tetrimino& a, const tetrimino& b) {
+	if (a.tag() != shape::unknown || b.tag() != shape::unknown)
+	{
+		if (a.tag() != b.tag())
+			return false;
+	}
+	return std::equal(std::cbegin(a), std::cend(a), std::cbegin(b));
+}
 
 /*! \brief Comprison.
 *  \param a first tetrimino
@@ -93,27 +96,22 @@ bool operator==(const tetrimino& a, const tetrimino& b);
 *  \return true if not all a tetrimino's coordinates are equal
 *  to b tetrimino's coordinates.
 */
-bool operator!=(const tetrimino& a, const tetrimino& b);
-
-/*! \brief Moves tetrimino by vector.
-*	\param t tetrimino to transform.
-*	\param c translation vector.
-*	\return Tetrimino t moved by vector c.
-*/
-tetrimino move(tetrimino t, const coordinate c);
-
-/*! \brief Rotates tetrimino by 90deg around {0, 0}.
-*	\param t tetrimino to transform.
-*	\param d direction of rotation.
-*	\return Tetrimino t rotated by 90deg in direction d.
-*/
-tetrimino rotate(tetrimino t, const rotation d);
+inline bool operator!=(const tetrimino& a, const tetrimino& b) {
+	return !(a == b);
+}
 
 /*! \brief Outputs tetrimino to output stream.
 *  \param os output stream
 *  \param t tetrimino
 *  \return os stream with tetrimino t output to it.
 */
-std::ostream& operator<<(std::ostream& os, const tetrimino& t);
+inline std::ostream& operator<<(std::ostream& os, const tetrimino& t) {
+	os << t.tag() << " [";
+	std::for_each(
+		std::cbegin(t), std::cend(t),
+		[&os](const coordinate c) { os << c << ", "; }
+	);
+	return os << "]";
+}
 
 }
