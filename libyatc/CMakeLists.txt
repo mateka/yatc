@@ -2,7 +2,9 @@
 set(TARGET libyatc)
 set(SRCS
     src/coordinate.cpp
+    src/cooldown_timer.cpp
     src/board.cpp
+    src/piece.cpp
     src/tetriminos/tetrimino_base.cpp
     src/tetriminos/tetrimino_i.cpp
     src/tetriminos/tetrimino_j.cpp
