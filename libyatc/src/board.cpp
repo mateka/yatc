@@ -17,6 +17,10 @@ board::axis_type board::columns_count() const {
 	return m_columns_count;
 }
 
+coordinate board::starting_pos() const {
+	return coordinate(columns_count() / 2, rows_count());
+}
+
 board::type& board::operator[](const coordinate c) {
 	return m_matrix[c.y()][c.x()];
 }
@@ -25,10 +29,20 @@ board::type board::operator[](const coordinate c) const {
 	return m_matrix[c.y()][c.x()];
 }
 
+bool board::valid_x(const board::axis_type x) const {
+	return x >= 0 && x < columns_count();
+}
+
+bool board::valid_y(const board::axis_type y) const {
+	return y >= 0 && y < rows_count();
+}
+
+bool board::valid_extended_y(const board::axis_type y) const {
+	return y >= 0 && y < rows_count() + 4;
+}
+
 bool board::valid(const coordinate c) const {
-	return
-		c.x() >= 0 && c.x() < columns_count() &&
-		c.y() >= 0 && c.y() < rows_count();
+	return valid_x(c.x()) && valid_y(c.y());
 }
 
 bool board::free(const coordinate c) const {
@@ -38,11 +52,13 @@ bool board::free(const coordinate c) const {
 bool board::free(const tetrimino& t) const {
 	return std::all_of(
 		std::cbegin(t), std::cend(t), [this](const coordinate c){
-		return this->valid(c) && this->free(c);
+		return 
+			(this->valid(c) && this->free(c))
+		||	(!this->valid(c) && this->valid_x(c.x()) && this->valid_extended_y(c.y()));
 	});
 }
 
-bool board::full(const board::axis_type row) const {
+bool board::full_row(const board::axis_type row) const {
 	const auto& row_data = m_matrix[row];
 	return std::all_of(
 		std::cbegin(row_data), std::cend(row_data),
@@ -60,6 +76,14 @@ bool board::can_be_placed(const tetrimino& t) const {
 	});
 }
 
+bool board::full() const {
+	const auto& top = m_matrix.back();
+	return std::any_of(
+		std::cbegin(top), std::cend(top),
+		[](const auto v) { return v != shape::unknown; }
+	);
+}
+
 void board::place(const tetrimino& t) {
 	if (!can_be_placed(t)) {
 		std::ostringstream msg;
@@ -73,7 +97,7 @@ void board::place(const tetrimino& t) {
 }
 
 void board::remove_row(const board::axis_type row) {
-	if(!full(row)) {
+	if(!full_row(row)) {
 		std::ostringstream msg;
 		msg << "Cannot remove row " << row
 			<< ", because it is not full!";

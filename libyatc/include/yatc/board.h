@@ -54,6 +54,11 @@ public:
 	*/
 	axis_type columns_count() const;
 
+	/*! \brief Starting position for board.
+	*   \return Coordinates of starting position.
+	*/
+	coordinate starting_pos() const;
+
 	/*! \brief Indexing board by coordinates
 	*   \param c cell's coordinates
 	*   \return reference to cell from c.y() row and c.x() column.
@@ -65,6 +70,24 @@ public:
 	*   \return Value of cell from c.y() row and c.x() column.
 	*/
 	type operator[](const coordinate c) const;
+
+	/*! \brief Check if x coordinate is valid.
+	*   \param x x coordinate
+	*   \return true if x points to column on board.
+	*/
+	bool valid_x(const axis_type x) const;
+
+	/*! \brief Check if y coordinate is valid.
+	*   \param y y coordinate
+	*   \return true if y points to row on board.
+	*/
+	bool valid_y(const axis_type y) const;
+
+	/*! \brief Check if y coordinate is valid as an extended coordinate.
+	*   \param y y coordinate
+	*   \return true if y points to row on extended board (3 rows higher).
+	*/
+	bool valid_extended_y(const axis_type y) const;
 
 	/*! \brief Check if coordinates are valid
 	*   \param c coordinates to check
@@ -88,7 +111,7 @@ public:
 	*	\param row row index.
 	*	\return true if all columns in row row are not free.
 	*/
-	bool full(const axis_type row) const;
+	bool full_row(const axis_type row) const;
 
 	/*! \brief Tests whether tetrimino can be placed.
 	*	\param t tetrimino to be placed.
@@ -96,6 +119,11 @@ public:
 	*   and there is one cell occupied below tetrimino.
 	*/
 	bool can_be_placed(const tetrimino& t) const;
+
+	/*! \brief Test whether board is full.
+	*   \return true if board is full and game ended.
+	*/
+	virtual bool full() const;
 
 	/*! \brief Place tetrimino on board.
 	*	\param t tetrimino to be placed.
