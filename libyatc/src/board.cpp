@@ -72,7 +72,7 @@ bool board::can_be_placed(const tetrimino& t) const {
 	return std::any_of(
 		std::cbegin(t), std::cend(t), [this](const coordinate c){
 		const coordinate below{ c.x(), static_cast<axis_type>(c.y() - 1)};
-		return valid(below) && !free(below);
+		return (valid(below) && !free(below)) || below.y() == -1;
 	});
 }
 

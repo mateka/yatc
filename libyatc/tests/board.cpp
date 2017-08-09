@@ -166,6 +166,16 @@ BOOST_AUTO_TEST_CASE(can_be_placed_free_space_with_support)
 	BOOST_TEST(b.can_be_placed(o));
 }
 
+BOOST_AUTO_TEST_CASE(can_be_placed_on_bottom)
+{
+	board b;
+	b[{8, 8}] = shape::J;
+
+	tetrimino_o o;
+	o.move({ 2, 0 });
+	BOOST_TEST(b.can_be_placed(o));
+}
+
 BOOST_AUTO_TEST_CASE(can_be_placed_occupied_cell)
 {
 	board b;
@@ -198,6 +208,23 @@ BOOST_AUTO_TEST_CASE(place_on_free_space_with_support)
 	BOOST_TEST(b[coordinate(8, 9)] == o.tag());
 	BOOST_TEST(b[coordinate(7, 10)] == o.tag());
 	BOOST_TEST(b[coordinate(8, 10)] == o.tag());
+	BOOST_TEST(b[coordinate(8, 8)] == shape::J);
+}
+
+BOOST_AUTO_TEST_CASE(place_on_bottom)
+{
+	board b;
+	b[{8, 8}] = shape::J;
+
+	tetrimino_o o;
+	o.move({ 5, 0 });
+	b.place(o);
+	BOOST_TEST(b.free(coordinate(4, 0)));
+	BOOST_TEST(b[coordinate(5, 0)] == o.tag());
+	BOOST_TEST(b[coordinate(6, 0)] == o.tag());
+	BOOST_TEST(b[coordinate(5, 1)] == o.tag());
+	BOOST_TEST(b[coordinate(6, 1)] == o.tag());
+	BOOST_TEST(b.free(coordinate(6, 2)));
 	BOOST_TEST(b[coordinate(8, 8)] == shape::J);
 }
 

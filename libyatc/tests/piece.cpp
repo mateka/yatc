@@ -145,6 +145,15 @@ BOOST_AUTO_TEST_CASE(can_be_placed_on_free_space_with_support)
 	BOOST_TEST(p.can_be_placed_on(b));
 }
 
+BOOST_AUTO_TEST_CASE(can_be_placed_on_bottom)
+{
+	board b;
+	b[{8, 8}] = shape::J;
+
+	piece p{ std::make_unique<tetrimino_o>(),{ 6, 0 }, 1ns, 1ns };
+	BOOST_TEST(p.can_be_placed_on(b));
+}
+
 BOOST_AUTO_TEST_CASE(can_be_placed_on_occupied_cell)
 {
 	board b;
@@ -175,6 +184,23 @@ BOOST_AUTO_TEST_CASE(place_on_free_space_with_support)
 	BOOST_TEST(b[coordinate(8, 9)] == p.block().tag());
 	BOOST_TEST(b[coordinate(7, 10)] == p.block().tag());
 	BOOST_TEST(b[coordinate(8, 10)] == p.block().tag());
+	BOOST_TEST(b[coordinate(8, 8)] == shape::J);
+
+	BOOST_TEST(p.position() == coordinate(-1, -1));
+}
+
+BOOST_AUTO_TEST_CASE(place_on_bottom)
+{
+	board b;
+	b[{8, 8}] = shape::J;
+
+	piece p{ std::make_unique<tetrimino_o>(),{ 4, 0 }, 1ns, 1ns };
+	p.place_on(b);
+	BOOST_TEST(b.free(coordinate(3, 0)));
+	BOOST_TEST(b[coordinate(4, 0)] == p.block().tag());
+	BOOST_TEST(b[coordinate(5, 0)] == p.block().tag());
+	BOOST_TEST(b[coordinate(4, 1)] == p.block().tag());
+	BOOST_TEST(b[coordinate(5, 1)] == p.block().tag());
 	BOOST_TEST(b[coordinate(8, 8)] == shape::J);
 
 	BOOST_TEST(p.position() == coordinate(-1, -1));
