@@ -16,6 +16,10 @@ add_executable(board board.cpp)
 target_link_libraries(board libyatc ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 add_test(NAME board COMMAND board)
 
+add_executable(uniform_tetrimino_factory uniform_tetrimino_factory.cpp)
+target_link_libraries(uniform_tetrimino_factory libyatc ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+add_test(NAME uniform_tetrimino_factory COMMAND uniform_tetrimino_factory)
+
 add_executable(piece piece.cpp)
 target_link_libraries(piece libyatc ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 add_test(NAME piece COMMAND piece)

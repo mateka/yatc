@@ -5,6 +5,7 @@ set(SRCS
     src/cooldown_timer.cpp
     src/board.cpp
     src/piece.cpp
+	src/uniform_tetrimino_factory.cpp
     src/tetriminos/tetrimino_base.cpp
     src/tetriminos/tetrimino_i.cpp
     src/tetriminos/tetrimino_j.cpp
